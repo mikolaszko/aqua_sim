@@ -707,6 +707,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_panorbit_camera"
+version = "0.18.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53bcace1c8c173841c63f8fcac115ce88eba389f877d96e84868942a72bb2ceb"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1659,6 +1668,7 @@ name = "first_bevy_game"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_panorbit_camera",
 ]
 
 [[package]]

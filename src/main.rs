@@ -1,42 +1,52 @@
-#[derive(Component)]
-struct Person;
 
-#[derive(Component)]
-struct Name(String);
+use bevy::prelude::* ;
+use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 
-use bevy::prelude::*;
+//.insert_resource(GreetTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
 
 fn main() {
     App::new()
-        .add_systems(Startup, add_people)
-        .add_systems(
-            Update,
-            (hello_world_system, (update_people, greet_people).chain()),
-        )
+        .add_plugins(DefaultPlugins)
+        .add_plugins(PanOrbitCameraPlugin)
+        .add_systems(Startup, setup)
         .run();
 }
 
-fn add_people(mut commands: Commands) {
-    commands.spawn((Person, Name("John Smith".to_string())));
-    commands.spawn((Person, Name("Joanna Smith".to_string())));
-    commands.spawn((Person, Name("Joline Smith".to_string())));
-}
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>
+) {
+    //Ground
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Plane3d::default().mesh().size(5.,5.)),
+        material: materials.add(Color::rgb(0.3, 0.5, 0.3)),
+        ..default()
+    });
+    // Cube
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Cuboid::new(2.0, 1.0, 1.0)),
+        material: materials.add(Color::rgb(0.8, 0.7, 0.6)),
+        transform: Transform::from_xyz(0.0, 0.5, 0.0),
+        ..default()
+    });
+    //Light 
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            shadows_enabled: true,
+            intensity: 500_000.0,
+            ..default()
+        },
+        transform: Transform::from_xyz(-3., 2.5, 2.0),
+        ..default()
+    });
+     // Camera
+     commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_translation(Vec3::new(0.0, 1.5, 5.0)),
+            ..default()
+        },
+        PanOrbitCamera::default(),
+    ));
 
-fn greet_people(query: Query<&Name, With<Person>>) {
-    for name in &query {
-        println!("hello {}", name.0)
-    }
-}
-
-fn update_people(mut query: Query<&mut Name, With<Person>>) {
-    for mut name in &mut query {
-        if name.0 == "Joanna Smith" {
-            name.0 = "Joanna Not Smith".to_string();
-            break;
-        }
-    }
-}
-
-fn hello_world_system() {
-    println!("Hello, world!");
 }
