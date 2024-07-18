@@ -9,10 +9,6 @@ impl SandAmount {
     pub fn increase(&mut self) {
         self.grains += 1;
     }
-
-    pub fn decrease(&mut self) {
-        self.grains += 1;
-    }
 }
 
 pub struct SandMetadataPlugin;

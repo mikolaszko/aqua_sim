@@ -26,7 +26,6 @@ fn main() {
         .add_systems(Startup, setup_background)
         .add_systems(Startup, setup_cameras)
         .add_systems(Startup, setup_light)
-        .add_systems(Startup, setup_balls)
         .add_systems(Update, cursor_to_ground_plane)
         .insert_resource(DebugPickingMode::Normal)
         .run();
@@ -86,26 +85,6 @@ fn setup_background(mut commands: Commands) {
     commands
         .spawn((MyGroundPlane, Collider::cuboid(5.0, 0.1, 5.0)))
         .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.4, 0.0)));
-}
-
-fn setup_balls(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    /* Create the bouncing ball. */
-    commands.spawn((
-        PbrBundle {
-            mesh: meshes.add(Cuboid::default()),
-            material: materials.add(Color::WHITE),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
-            ..default()
-        },
-        Collider::ball(0.5),
-        RigidBody::Dynamic,
-        Restitution::coefficient(0.7),
-        PickableBundle::default(),
-    ));
 }
 
 /*

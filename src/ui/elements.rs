@@ -4,10 +4,18 @@ use bevy_egui::{
     EguiContexts,
 };
 
+#[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
+pub enum AquaElementsState {
+    Sand,
+    #[default]
+    Rock,
+    Plant,
+}
+
 #[derive(Resource, Default)]
 pub struct UiState {
-    label: String,
-    is_dark_mode: bool,
+    pub label: String,
+    pub radio: AquaElementsState,
 }
 
 use crate::sand::metadata::SandAmount;
@@ -17,6 +25,7 @@ pub struct ElementsPlugin;
 impl Plugin for ElementsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<UiState>();
+        app.init_state::<AquaElementsState>();
         app.add_systems(Update, setup_ui);
     }
 }
@@ -24,7 +33,8 @@ impl Plugin for ElementsPlugin {
 fn setup_ui(
     mut ui_state: ResMut<UiState>,
     mut contexts: EguiContexts,
-    mut metadata: ResMut<SandAmount>,
+    mut meta_state: ResMut<NextState<AquaElementsState>>,
+    sand_metadata: Res<SandAmount>,
 ) {
     let ctx = contexts.ctx_mut();
 
@@ -39,16 +49,33 @@ fn setup_ui(
             });
             ui.vertical(|ui| {
                 ui.label("Sand amount ");
-                ui.label(metadata.grains.to_string());
-                if ui.button("Add sand").clicked() {
-                    metadata.increase()
+                ui.label(sand_metadata.grains.to_string());
+            });
+
+            ui.label("Select aquarium item to insert");
+            ui.horizontal(|ui| {
+                if ui
+                    .radio_value(&mut ui_state.radio, AquaElementsState::Sand, "Sand")
+                    .clicked()
+                {
+                    meta_state.set(AquaElementsState::Sand)
                 };
-                if ui.button("Subtract sand").clicked() {
-                    metadata.decrease()
+                if ui
+                    .radio_value(&mut ui_state.radio, AquaElementsState::Rock, "Rocks")
+                    .clicked()
+                {
+                    meta_state.set(AquaElementsState::Rock)
+                };
+                if ui
+                    .radio_value(&mut ui_state.radio, AquaElementsState::Plant, "Plants")
+                    .clicked()
+                {
+                    meta_state.set(AquaElementsState::Plant)
                 };
             });
 
-            ui.checkbox(&mut ui_state.is_dark_mode, "Dark Mode");
+            println!("{:?}", AquaElementsState::Sand);
+            ui.end_row();
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 ui.add(egui::Hyperlink::from_label_and_url(
