@@ -1,8 +1,13 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use assets::GameAssets;
+use bevy::{asset::AssetMetaCheck, prelude::*, window::PrimaryWindow};
+use bevy_asset_loader::prelude::*;
 use bevy_mod_picking::prelude::*;
 use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 use bevy_rapier3d::prelude::*;
 
+mod assets;
+mod audio;
+mod plants;
 mod sand;
 mod ui;
 
@@ -10,9 +15,18 @@ mod ui;
 struct GroundCoords {
     global: Vec3,
 }
+#[derive(States, Clone, Eq, PartialEq, Debug, Hash, Default)]
+pub enum GameState {
+    #[default]
+    AssetLoading,
+    Gaming,
+    GameOver,
+    Restart,
+}
 
 fn main() {
     App::new()
+        .insert_resource(AssetMetaCheck::Never)
         .init_resource::<GroundCoords>()
         .add_plugins(DefaultPlugins.set(low_latency_window_plugin()))
         .add_plugins(PanOrbitCameraPlugin)
@@ -21,8 +35,17 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
         ))
+        .init_state::<GameState>()
+        .add_loading_state(
+            LoadingState::new(GameState::AssetLoading).continue_to_state(GameState::Gaming),
+        )
+        .configure_loading_state(
+            LoadingStateConfig::new(GameState::AssetLoading).load_collection::<GameAssets>(),
+        )
+        .add_plugins(audio::GameAudioPlugin)
         .add_plugins(ui::UiPlugin)
         .add_plugins(sand::SandPlugin)
+        .add_plugins(plants::PlantsPlugin)
         .add_systems(Startup, setup_background)
         .add_systems(Startup, setup_cameras)
         .add_systems(Startup, setup_light)
